@@ -1,16 +1,29 @@
 package tmcoll
 
 type Trck struct {
-	Iddd string
-	Name string
+	iddd string
+	name string
 	clap chan *Mssg
-	Flap chan *Mssg
+	flap chan *Mssg
+	code func (iddd, name string, clap <- chan *Mssg, flap chan <- *Mssg,
+		seed map[string]interface{})
+	seed map[string]interface{}
 }
-	func Estb_Trck (iddd, name string) (*Trck, chan<- *Mssg) {
+	func Trck_Estb (iddd, name string, code func (iddd, name string, clap <- chan *Mssg,
+		flap chan <- *Mssg, seed map[string]interface{}), seed ...
+		map[string]interface{}) (*Trck, chan<- *Mssg) {
 		trck := &Trck {}
-		trck.Iddd = iddd
-		trck.Name = name
+		trck.iddd = iddd
+		trck.name = name
 		trck.clap = make (chan *Mssg)
-		trck.Flap = make (chan *Mssg)
+		trck.flap = make (chan *Mssg)
+		trck.code = code
+		trck.seed = make (map[string]interface{})
+		if len (seed) != 0 && seed [0] != nil {
+			trck.seed = seed [0]
+		}
 		return trck, trck.clap
+	}
+	func (objc *Trck) Runn () {
+		objc.code (objc.iddd, objc.name, objc.clap, objc.flap, objc.seed)
 	}

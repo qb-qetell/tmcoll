@@ -1,23 +1,38 @@
 package tmcoll
+import "time"
 
 type Mssg struct {
 	Sndr string
 	Rcpn string
 	Core []byte
 }
-	func Estb_Mssg (sndr, rcpn string, core []byte) (*Mssg) {
+	func Mssg_Estb (sndr, rcpn string, core []byte) (*Mssg) {
 		mssg := &Mssg {}
 		mssg.Sndr = sndr
 		mssg.Rcpn = rcpn
 		mssg.Core = core
 		return mssg
 	}
-	func (objc *Mssg) Send (mssgBoxx chan<- *Mssg, wait ... bool) (bool) {
-	// wait time
-		if len (wait) == 0 {
-			select {
+	func (objc *Mssg) Send (mssgBoxx chan <- *Mssg, waitDrtn ... time.Duration) (bool) {
+		if len (waitDrtn) != 0 {
+			if waitDrtn [0] == (time.Nanosecond * 0) {
+				select {
 				case mssgBoxx <- objc: { return true }
 				default: { return false }
+				}
+			} else {
+				flapXX := make (chan bool)
+				go func (slppDrtn time.Duration, flap chan <- bool) {
+					time.Sleep (slppDrtn)
+					select {
+					case flap <- true: {}
+					default: {}
+					}
+				} (waitDrtn [0], flapXX)
+				select {
+				case mssgBoxx <- objc: { return true  }
+				case _  =  <- flapXX:  { return false }
+				}
 			}
 		} else {
 			mssgBoxx <- objc
