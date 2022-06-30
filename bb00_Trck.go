@@ -24,6 +24,6 @@ type Trck struct {
 		}
 		return trck, trck.Clap
 	}
-	func (objc *Trck) runn (hostIddd string) {
+	func (objc *Trck) Runn (hostIddd string) {
 		objc.Code (hostIddd, objc.Iddd, objc.Name, objc.Clap, objc.Flap, objc.Seed)
 	}
