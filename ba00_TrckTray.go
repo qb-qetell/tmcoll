@@ -1,25 +1,25 @@
 package tmcoll
-import (
-	_ "github.com/qb-qetell/errr"
-)
+import _ "github.com/qb-qetell/errr"
 
 type TrckTray struct {
-	core []*trckTray_trck
+	Core []*TrckTray_trck
 }
-	func TrckTray_Estb (mngrIddd string) (*TrckTray) { return &TrckTray {} }
+	func TrckTray_Estb (mngrIddd string) (*TrckTray) { return  &TrckTray {} }
 	func (objc *TrckTray) Pplt (trck *Trck, whttList []string, prvlStts bool) {
-		trckInst := &trckTray_trck {}
+		trckInst := &TrckTray_trck {}
 		trckInst.trck = trck
 		trckInst.whttList = whttList
 		trckInst.prvlStts = prvlStts
-		objc.core = append (objc.core, trckInst)
+		trckInst.lifeStts = false
+		objc.Core = append (objc.Core, trckInst)
 	}
 	func (objc *TrckTray) Mngg () (error) {
 		return nil
 	}
 
-type trckTray_trck struct {
+type TrckTray_trck struct {
 	trck *Trck
 	whttList []string
 	prvlStts bool
+	lifeStts bool
 }
