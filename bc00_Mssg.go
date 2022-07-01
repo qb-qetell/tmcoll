@@ -4,9 +4,9 @@ import "time"
 type Mssg struct {
 	Sndr string
 	Rcpn string
-	Core []byte
+	Core interface {}
 }
-	func Mssg_Estb (sndr, rcpn string, core []byte) (*Mssg) {
+	func Mssg_Estb (sndr, rcpn string, core interface {}) (*Mssg) {
 		mssg := &Mssg {}
 		mssg.Sndr = sndr
 		mssg.Rcpn = rcpn

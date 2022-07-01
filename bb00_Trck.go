@@ -11,7 +11,7 @@ type Trck struct {
 }
 	func Trck_Estb (iddd, name string, code func (hostIddd, iddd, name string, clap <- chan
 		*Mssg, flap chan <- *Mssg, seed map[string]interface{}), seed ...
-		map[string]interface{}) (*Trck, chan<- *Mssg) {
+		map[string]interface{}) (*Trck) {
 		trck := &Trck {}
 		trck.Iddd = iddd
 		trck.Name = name
@@ -22,8 +22,9 @@ type Trck struct {
 		if len (seed) != 0 && seed [0] != nil {
 			trck.Seed = seed [0]
 		}
-		return trck, trck.Clap
+		return trck
 	}
 	func (objc *Trck) Runn (hostIddd string) {
+		defer recover ()
 		objc.Code (hostIddd, objc.Iddd, objc.Name, objc.Clap, objc.Flap, objc.Seed)
 	}
