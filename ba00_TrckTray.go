@@ -9,6 +9,7 @@ type TrckTray struct {
 	mngrIddd string
 	trck []*trckTray_trck
 	mssgList *list.List
+	shutDownInnnPrgsBool bool
 	shutDownBool bool
 }
 	func TrckTray_Estb (mngrIddd string) (*TrckTray) {
@@ -26,6 +27,7 @@ type TrckTray struct {
 		trckInst.prvlBool = prvlBool
 		trckInst.strtUpppBool = false
 		trckInst.strtUpppSccsBool = "undf"
+		trckInst.strtUpppMssg = ""
 		trckInst.lifeBool = false
 		trckInst.mssgList = list.New ()
 		objc.trck = append (objc.trck, trckInst)
@@ -63,38 +65,38 @@ type TrckTray struct {
 		
 		// ~Step 2
 		go func (objc *TrckTray) {
-			// ~Start all trakcs
+			// ~Step 2.1: Start all trakcs
 			for _, _ba00 := range objc.trck {
-			go _ba00.trck.Runn (objc.mngrIddd)
-			for {
-				if _ba00.strtUpppBool == false {
-				time.Sleep (time.Microsecond * 1)
-				continue
+				go _ba00.trck.Runn (objc.mngrIddd)
+				for {
+					if _ba00.strtUpppBool == false {
+						time.Sleep (time.Microsecond * 1)
+						continue
+					}
+					if _ba00.strtUpppSccsBool == "flss" {
+						goto next
+					}
+					break
 				}
-				if _ba00.strtUpppSccsBool == "flss" {
-				goto step_22
-				}
-				break
-			}
 			}
 			
-			step_22:
-			// ~Waiting for all tracks to die before sending shutdown signal
+			next:
+			// ~Step 2.2: Waiting for all tracks to die before sendng shutdown signal
 			for {
-			shutDownBool := true
-			for _, _ca00 := range objc.trck {
-				if _ca00.lifeBool == true {
-				shutDownBool = false
-				break
+				shutDownBool := true
+				for _, _ca00 := range objc.trck {
+					if _ca00.lifeBool == true {
+					shutDownBool = false
+					break
+					}
 				}
-			}
-			if shutDownBool == false {
-				time.Sleep (time.Microsecond * 100)
-				continue
-			} else {
-				objc.shutDownBool = true
-				break
-			}
+				if shutDownBool == false {
+					time.Sleep (time.Microsecond * 100)
+					continue
+				} else {
+					objc.shutDownBool = true
+					break
+				}
 			}
 		} (objc)
 		
@@ -125,6 +127,7 @@ type TrckTray struct {
 			for _, _bc00 := range objc.trck {
 				for {
 					_ca00 := _bc00.mssgList.Front ()
+					if _ca00 == nil { goto next }
 					_bc00.mssgList.Remove (_ca00)
 					for _, _cb00 := range _bc00.whttList {
 						if strings.Index (_ca00.Value.(*Mssg).Sndr,
@@ -145,7 +148,7 @@ type TrckTray struct {
 				next:
 			}
 			// ~Step 3.3
-			// xxxxxxxxx
+			trckTray_hndlAaaaMssg (objc)
 		}
 		} (objc, flap)
 		
@@ -158,17 +161,50 @@ type trckTray_trck struct {
 	prvlBool bool
 	strtUpppBool bool
 	strtUpppSccsBool string
+	strtUpppMssg string
 	lifeBool bool
 	mssgList *list.List
 }
-func trckTray_hndlMssg (sndr string, mssg *Mssg) (bool) {
-
-return false
+func trckTray_hndlAaaaMssg (objc *TrckTray) {
+	_ba00 := objc.mssgList.Front ().Value.(*Mssg)
+	if _ba00 == nil   { return }
+	
+	_bb00, _bc00 := _ba00.Core.(string)
+	if _bc00 == false { return }
+	
+	_bd00 := strings.SplitN (_bb00, ":", 2)
+	if regexp.MustCompile (`^[a-z]{2,2}[0-9]{2,2}$`).MatchString (_bd00 [0]) == false {
+		return
+	}
+	
+	
+	if        _bd00 [0] == "bb00" {
+	// Start-up failed
+		for _, _ca00 := range objc.trck {
+			if _ca00.trck.Iddd == _ba00.Sndr {
+				_ca00.strtUpppBool = true
+				_ca00.strtUpppSccsBool = "flss"
+				_ca00.strtUpppMssg = _bd00 [1]
+			}
+			break
+		}
+	} else if _bd00 [0] == "bc00" {
+	// Start-up successful
+		for _, _ca00 := range objc.trck {
+			if _ca00.trck.Iddd == _ba00.Sndr {
+				_ca00.strtUpppBool = true
+				_ca00.strtUpppSccsBool = "true"
+			}
+			break
+		}
+	} else if _bd00 [0] == "by00" {
+	// Shutdown
+		if objc.shutDownInnnPrgsBool == true { return }
+		for _,  _ca00 := range objc.trck {
+			_cb00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, "10aa")
+			objc.mssgList.PushFront (_cb00)
+		}
+	} else if _bd00 [0] == "cb00" {
+	// How many messages do I have?
+	} else {}
 }
-
-
-/*
-ba00: A component failed to start up
-cb00: 
-
-*/
