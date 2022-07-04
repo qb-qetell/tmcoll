@@ -2,17 +2,20 @@ package tmcoll
 import "container/list"
 import "github.com/qb-qetell/errr"
 import "regexp"
+import "strings"
 import "time"
 
 type TrckTray struct {
 	mngrIddd string
 	trck []*trckTray_trck
+	mssgList *list.List
 	shutDownBool bool
 }
 	func TrckTray_Estb (mngrIddd string) (*TrckTray) {
 		return &TrckTray {
 			mngrIddd: mngrIddd,
 			trck: []*trckTray_trck {},
+			mssgList: list.New (),
 			shutDownBool: false,
 		}
 	}
@@ -21,7 +24,8 @@ type TrckTray struct {
 		trckInst.trck = trck
 		trckInst.whttList = whttList
 		trckInst.prvlBool = prvlBool
-		trckInst.strtBool = false
+		trckInst.strtUpppBool = false
+		trckInst.strtUpppSccsBool = "undf"
 		trckInst.lifeBool = false
 		trckInst.mssgList = list.New ()
 		objc.trck = append (objc.trck, trckInst)
@@ -63,14 +67,18 @@ type TrckTray struct {
 			for _, _ba00 := range objc.trck {
 			go _ba00.trck.Runn (objc.mngrIddd)
 			for {
-				if _ba00.strtBool == false {
+				if _ba00.strtUpppBool == false {
 				time.Sleep (time.Microsecond * 1)
 				continue
+				}
+				if _ba00.strtUpppSccsBool == "flss" {
+				goto step_22
 				}
 				break
 			}
 			}
 			
+			step_22:
 			// ~Waiting for all tracks to die before sending shutdown signal
 			for {
 			shutDownBool := true
@@ -92,27 +100,64 @@ type TrckTray struct {
 		
 		// ~Step 3
 		for {
-			// ~Receiving messages
-			for _,  _ba00 := range objc.trck {
-			select {
-			case    _bb00 := <- _ba00.trck.Flap: {
-				_ba00.mssgList.PushBack (_bb00)
+			// ~Step 3.1: Receiving messages
+			for _, _ba00 := range objc.trck {
+				select {
+				case _bb00 := <- _ba00.trck.Flap: {
+					if strings.Index (_bb00.Sndr, _ba00.trck.Iddd) != 0 {
+						continue
+					}
+					for _,  _ca00 := range objc.trck {
+						if strings.Index (_bb00.Rcpn, _ca00.trck.Iddd) ==
+							0 {
+							_ba00.mssgList.PushBack (_bb00)
+							break
+						}
+					}
+					if _bb00.Rcpn == objc.mngrIddd {
+						objc.mssgList.PushBack (_bb00)
+					}
+				}
+				default: {}
+				}
 			}
-			default: {}
+			// ~Step 3.2: Pushing messages
+			for _, _bc00 := range objc.trck {
+				for {
+					_ca00 := _bc00.mssgList.Front ()
+					_bc00.mssgList.Remove (_ca00)
+					for _, _cb00 := range _bc00.whttList {
+						if strings.Index (_ca00.Value.(*Mssg).Sndr,
+							_cb00) == 0 {
+							select {
+							case _bc00.trck.Clap <-
+								_ca00.Value.(*Mssg): {
+								goto next
+							}
+							default: {
+								_bc00.mssgList.PushFront (_ca00)
+								goto next
+							}
+							}
+						}
+					}
+				}
+				next:
 			}
-			}
-			
-}
-	} (objc, flap)
-	
-	return
+			// ~Step 3.3
+			// xxxxxxxxx
+		}
+		} (objc, flap)
+		
+		return
 	}
 
 type trckTray_trck struct {
 	trck *Trck
 	whttList []string
 	prvlBool bool
-	strtBool bool
+	strtUpppBool bool
+	strtUpppSccsBool string
 	lifeBool bool
 	mssgList *list.List
 }
@@ -120,3 +165,10 @@ func trckTray_hndlMssg (sndr string, mssg *Mssg) (bool) {
 
 return false
 }
+
+
+/*
+ba00: A component failed to start up
+cb00: 
+
+*/
