@@ -1,6 +1,8 @@
 package tmcoll
 import "container/list"
+import "fmt"
 import "github.com/qb-qetell/errr"
+import "github.com/qb-qetell/combGUID"
 import "regexp"
 import "strings"
 import "time"
@@ -172,23 +174,25 @@ func trckTray_hndlAaaaMssg (objc *TrckTray) {
 	_bb00, _bc00 := _ba00.Core.(string)
 	if _bc00 == false { return }
 	
-	_bd00 := strings.SplitN (_bb00, ":", 2)
-	if regexp.MustCompile (`^[a-z]{2,2}[0-9]{2,2}$`).MatchString (_bd00 [0]) == false {
+	_bd00 := strings.SplitN (_bb00, ":", 3)
+	if regexp.MustCompile (`^[a-z0-9]{32,32}$`).MatchString (_bd00 [0]) == false {
+		return
+	}
+	if regexp.MustCompile (`^[a-z0-9]{4,4}$`  ).MatchString (_bd00 [1]) == false {
 		return
 	}
 	
-	
-	if        _bd00 [0] == "bb00" {
+	if        _bd00 [1] == "bb00" {
 	// Start-up failed
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
 				_ca00.strtUpppBool = true
 				_ca00.strtUpppSccsBool = "flss"
-				_ca00.strtUpppMssg = _bd00 [1]
+				_ca00.strtUpppMssg = _bd00 [2]
 			}
 			break
 		}
-	} else if _bd00 [0] == "bc00" {
+	} else if _bd00 [1] == "bc00" {
 	// Start-up successful
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
@@ -197,14 +201,26 @@ func trckTray_hndlAaaaMssg (objc *TrckTray) {
 			}
 			break
 		}
-	} else if _bd00 [0] == "by00" {
+	} else if _bd00 [1] == "by00" {
 	// Shutdown
 		if objc.shutDownInnnPrgsBool == true { return }
 		for _,  _ca00 := range objc.trck {
-			_cb00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, "10aa")
-			objc.mssgList.PushFront (_cb00)
+			_cb00 := fmt.Sprintf ("%s:18aa", combGUID.CombGUID_Estb ("sy",
+				30).SmplFrmt ())
+			_cc00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, _cb00)
+			objc.mssgList.PushFront (_cc00)
 		}
-	} else if _bd00 [0] == "cb00" {
+	} else if _bd00 [1] == "cb00" {
 	// How many messages do I have?
+		for _, _ca00 := range objc.trck {
+			if _ca00.trck.Iddd == _ba00.Sndr {
+				_cb00 := fmt.Sprintf ("%s:21aa:%d", _bd00 [0],
+					_ca00.mssgList.Len ())
+				_cc00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, _cb00)
+				objc.mssgList.PushFront (_cc00)
+			}
+			break
+		}
 	} else {}
 }
+

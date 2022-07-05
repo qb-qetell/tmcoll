@@ -1,2 +1,6 @@
+github.com/qb-qetell/combGUID v0.10101.10101 h1:soAzHG3To4hJ7UCYFPonZYquOMDFz4nXJ8eszmd6dME=
+github.com/qb-qetell/combGUID v0.10101.10101/go.mod h1:ZcEdJMmOFailj7QZaU16xZeVk8wcvE2F3lNeFnSAJsA=
 github.com/qb-qetell/errr v0.10101.10101 h1:B5nRBw3D1LX3X1zCIfKmjo8wwIm+0uPpbZV5fNiGby4=
 github.com/qb-qetell/errr v0.10101.10101/go.mod h1:9roWzEKN5TAeoP7FTi5rr1rxBqc9j3+AjYTXM/Y9dsw=
+github.com/thanhpk/randstr v1.0.4 h1:IN78qu/bR+My+gHCvMEXhR/i5oriVHcTB/BJJIRTsNo=
+github.com/thanhpk/randstr v1.0.4/go.mod h1:M/H2P1eNLZzlDwAzpkkkUvoyNNMbzRGhESZuEQk3r0U=
