@@ -11,9 +11,17 @@ type Trck struct {
 		seed map[string]interface{})
 	Seed map[string]interface{}
 }
-	func Trck_Estb (iddd, name string, code func (hostIddd, iddd, name string, clap <- chan
-		*Mssg, flap chan <- *Mssg, seed map[string]interface{}), seed ...
-		map[string]interface{}) (*Trck) {
+	func Trck_Estb (
+			
+		iddd string,
+		name string,
+		code func (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Mssg,
+			seed map[string]interface{}),
+		seed ... map[string]interface{},
+		) (
+		*Trck,
+		) {
+		
 		trck := &Trck {}
 		trck.Iddd = iddd
 		trck.Name = name
