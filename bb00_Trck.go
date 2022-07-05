@@ -1,4 +1,6 @@
 package tmcoll
+import "fmt"
+import "github.com/qb-qetell/combGUID"
 
 type Trck struct {
 	Iddd string
@@ -25,6 +27,17 @@ type Trck struct {
 		return trck
 	}
 	func (objc *Trck) Runn (hostIddd string) {
-		defer recover ()
+		defer func (objc *Trck) {
+			_ba00 := recover ()
+			if _ba00 != nil {
+				_ca00 := fmt.Sprintf ("Track paniced. [%v]", _ba00)
+				_cb00 := []string {
+					combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+					"bm00",
+					_ca00,
+				}
+				Mssg_Estb (objc.Iddd, hostIddd, _cb00).Send (objc.Clap)
+			}
+		} (objc)
 		objc.Code (hostIddd, objc.Iddd, objc.Name, objc.Clap, objc.Flap, objc.Seed)
 	}
