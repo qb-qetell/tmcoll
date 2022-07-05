@@ -40,7 +40,7 @@ type TrckTray struct {
 		objc.trck = append (objc.trck, trckInst)
 	}
 	func (objc *TrckTray) Mngg () (flap chan *Mssg) {
-		flap = make (chan *Mssg, 3)
+		flap = make (chan *Mssg, 2)
 		// Start up [failed/succesful] + shutdown
 		
 		go func (objc *TrckTray, flap chan <- *Mssg) {
@@ -251,41 +251,48 @@ func trckTray_hndlAaaaMssg (objc *TrckTray) {
 				_ca00.strtUpppSccsBool = "flss"
 				_ca00.strtUpppMssg = _bd00 [2]
 				_ca00.strtUpppBool = true
+				break
 			}
-			break
 		}
 	} else if _bd00 [1] == "bc00" {
 	// Start-up successful
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
 				_ca00.strtUpppSccsBool = "true"
+				_ca00.lifeBool = true
 				_ca00.strtUpppBool = true
+				break
 			}
-			break
 		}
 	} else if _bd00 [1] == "bm00" {
 	// Track failed
+		for _, _ca00 := range objc.trck {
+			if _ca00.trck.Iddd == _ba00.Sndr {
+				_ca00.lifeBool = false
+				break
+			}
+		}
+		_cb00 := ""
+		if len (_bd00) > 2 { _cb00 = _bd00 [2] }
+		_cc00 := []string {
+			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+			"10aa",
+			_cb00 ,
+		}
+		_cd00 := Mssg_Estb (objc.mngrIddd, "", _cc00)
+		trckTray_frwrToooPrvlTrck (objc, _cd00)
 	} else if _bd00 [1] == "by00" {
 	// Shutdown
 		if objc.shutDownInnnPrgsBool == true { return }
 		objc.shutDownInnnPrgsBool     = true
-		/*
-		for _,  _ca00 := range objc.trck {
-			_cb00 := fmt.Sprintf (
-				"%s:18aa",
-				combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-			)
-			_cc00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, _cb00)
-			objc.mssgList.PushFront (_cc00)
-		}
-		*/
+		go trckTray_hndlAaaaMssg_shutDownSyst (objc)
 	} else if _bd00 [1] == "cb00" {
 	// How many messages do I have?
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
 				_cb00 := []string {
 					_bd00 [0],
-					"21aa",
+					"20aa",
 					strconv.Itoa (_ca00.mssgList.Len ()),
 				}
 				_cc00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, _cb00)
@@ -298,5 +305,30 @@ func trckTray_hndlAaaaMssg (objc *TrckTray) {
 	}
 }
 func trckTray_hndlAaaaMssg_shutDownSyst (objc *TrckTray) {
-	//_ba00 := objc.
+	for _ba00 := len (objc.trck); _ba00 <= 1; _ba00 -- {
+		_bb00 := _ba00 - 1
+		_bc00 := []string {
+			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+			"18aa",
+		}
+		_bd00 := Mssg_Estb (objc.mngrIddd, objc.trck [_bb00].trck.Iddd, _bc00)
+		objc.trck [_bb00].mssgListMtxx.Lock ()
+		objc.trck [_bb00].mssgList.PushBack (_bd00)
+		objc.trck [_bb00].mssgListMtxx.Unlock ()
+		for {
+			if objc.trck [_bb00].lifeBool == false { break }
+			time.Sleep (time.Millisecond * 1)
+		}
+	}
+	objc.shutDownBool = true
+}
+func trckTray_frwrToooPrvlTrck (objc *TrckTray, mssg *Mssg) {
+	for _, _ca00 := range objc.trck {
+		if _ca00.prvlBool == true {
+			mssg.Rcpn = _ca00.trck.Iddd
+			_ca00.mssgListMtxx.Lock ()
+			_ca00.mssgList.PushBack (mssg)
+			_ca00.mssgListMtxx.Unlock ()
+		}
+	}
 }
