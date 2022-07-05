@@ -175,10 +175,10 @@ func trckTray_hndlAaaaMssg (objc *TrckTray) {
 	if _bc00 == false { return }
 	
 	_bd00 := strings.SplitN (_bb00, ":", 3)
-	if regexp.MustCompile (`^[a-z0-9]{32,32}$`).MatchString (_bd00 [0]) == false {
+	if regexp.MustCompile (`^tr[a-z0-9]{14,14}$`).MatchString (_bd00 [0]) == false {
 		return
 	}
-	if regexp.MustCompile (`^[a-z0-9]{4,4}$`  ).MatchString (_bd00 [1]) == false {
+	if regexp.MustCompile (`^[a-z0-9]{4,4}$`    ).MatchString (_bd00 [1]) == false {
 		return
 	}
 	
@@ -206,7 +206,7 @@ func trckTray_hndlAaaaMssg (objc *TrckTray) {
 		if objc.shutDownInnnPrgsBool == true { return }
 		for _,  _ca00 := range objc.trck {
 			_cb00 := fmt.Sprintf ("%s:18aa", combGUID.CombGUID_Estb ("sy",
-				30).SmplFrmt ())
+				14).SmplFrmt ())
 			_cc00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, _cb00)
 			objc.mssgList.PushFront (_cc00)
 		}
