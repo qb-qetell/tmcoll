@@ -69,7 +69,7 @@ type TrckTray struct {
 				flap <- _cb00
 				return
 			}
-			dscvTrck ["_bb00.trck.Iddd"] = "dscv"
+			dscvTrck [_ba00.trck.Iddd] = "dscv"
 		}
 		for _,  _bb00 := range objc.trck {
 			for _,  _ca00 := range _bb00.whttList {
@@ -100,8 +100,8 @@ type TrckTray struct {
 					}
 					if _ba00.strtUpppSccsBool == "flss" {
 						strtUpppSccsBool   = false
-						_cb00 := fmt.Sprintf ("Could not start " +
-							`track "%s : %s". [%s]`, _ba00.trck.Iddd,
+						_cb00 := fmt.Sprintf (`Track "%s:%s" could ` +
+							`not start. [%s]`, _ba00.trck.Iddd,
 							_ba00.trck.Name, _ba00.strtUpppMssg)
 						_cc00 := []string {
 							combGUID.CombGUID_Estb ("",
@@ -113,9 +113,9 @@ type TrckTray struct {
 						flap <- _cd00
 						goto next
 					} else {
-						_cb00 := fmt.Sprintf (`Track "%s : %s" could ` +
-							`not start. [%s]`, _ba00.trck.Iddd,
-							_ba00.trck.Name, _ba00.strtUpppMssg)
+						_cb00 := fmt.Sprintf (`Track "%s:%s" has ` +
+							`started.`, _ba00.trck.Iddd,
+							_ba00.trck.Name)
 						_cc00 := []string {
 							combGUID.CombGUID_Estb ("",
 								16).SmplFrmt (),
@@ -263,6 +263,9 @@ type trckTray_trck struct {
 	mssgListMtxx *sync.Mutex
 }
 func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) {
+	if objc.mssgList.Len () == 0 {
+		return
+	}
 	_ba00 := objc.mssgList.Front ().Value.(*Mssg)
 	if _ba00 == nil    { return }
 	_bb00, _bc00 := _ba00.Core.([]string)
