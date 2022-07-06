@@ -51,7 +51,6 @@ func trck0001 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 			Mssg_Estb (iddd, hostIddd, _bd00).Send (flap)
 		}
 	}
-
 }
 func trck0002 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Mssg,
 	seed map[string]interface{}) {
