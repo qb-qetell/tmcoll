@@ -95,7 +95,7 @@ type TrckTray struct {
 				go _ba00.trck.Runn (objc.mngrIddd)
 				for {
 					if _ba00.strtUpppBool == false {
-						time.Sleep (time.Microsecond * 1)
+						time.Sleep (time.Millisecond * 1)
 						continue
 					}
 					if _ba00.strtUpppSccsBool == "flss" {
@@ -152,19 +152,21 @@ type TrckTray struct {
 		
 		// ~Step 3
 		for {
+			wrkd := false
+			
 			// ~Step 3.1: Receiving messages
 			for _, _ba00 := range objc.trck {
 				select {
 				case _bb00 := <- _ba00.trck.Flap: {
 					if strings.Index (_bb00.Sndr, _ba00.trck.Iddd) != 0 {
-						continue
+						goto nxt1
 					}
 					for _,  _ca00 := range objc.trck {
 						if strings.Index (_bb00.Rcpn, _ca00.trck.Iddd) ==
 							0 {
-							_ba00.mssgListMtxx.Lock ()
-							_ba00.mssgList.PushBack (_bb00)
-							_ba00.mssgListMtxx.Unlock ()
+							_ca00.mssgListMtxx.Lock ()
+							_ca00.mssgList.PushBack (_bb00)
+							_ca00.mssgListMtxx.Unlock ()
 							break
 						}
 					}
@@ -173,9 +175,11 @@ type TrckTray struct {
 						objc.mssgList.PushBack (_bb00)
 						objc.mssgListMtxx.Unlock ()
 					}
+					wrkd = true
 				}
 				default: {}
 				}
+				nxt1:
 			}
 			// ~Step 3.2: Pushing messages
 			for _, _bc00 := range objc.trck {
@@ -183,29 +187,33 @@ type TrckTray struct {
 					_bc00.mssgListMtxx.Lock ()
 					_ca00 := _bc00.mssgList.Front ()
 					_bc00.mssgListMtxx.Unlock ()
-					if _ca00 == nil { goto next }
+					if _ca00 == nil { goto nxt2 }
 					_bc00.mssgListMtxx.Lock ()
 					_bc00.mssgList.Remove (_ca00)
 					_bc00.mssgListMtxx.Unlock ()
 					for _, _cb00 := range _bc00.whttList {
 						if strings.Index (_ca00.Value.(*Mssg).Sndr,
-							_cb00) == 0 {
+							_cb00) == 0 ||
+							_ca00.Value.(*Mssg).Sndr ==
+							objc.mngrIddd {
 							select {
 							case _bc00.trck.Clap <-
 								_ca00.Value.(*Mssg): {
-								goto next
+								wrkd = true
+								goto nxt2
 							}
 							default: {
 								_bc00.mssgListMtxx.Lock ()
-								_bc00.mssgList.PushFront (_ca00)
+								_bc00.mssgList.PushFront (
+									_ca00.Value.(*Mssg))
 								_bc00.mssgListMtxx.Unlock ()
-								goto next
+								goto nxt2
 							}
 							}
 						}
 					}
 				}
-				next:
+				nxt2:
 			}
 			
 			// ~Step 3.3
@@ -228,12 +236,14 @@ type TrckTray struct {
 						return
 					}
 				}
+				wrkd = true
 			}
 			default: {}
 			}
 			
 			// ~Step 3.4
-			trckTray_hndlAaaaMssg (objc, flap)
+			_cb00 := trckTray_hndlAaaaMssg (objc, flap)
+			if _cb00 == true { wrkd = true }
 			
 			// ~Step 3.5
 			if objc.shutDownBool == true {
@@ -245,6 +255,9 @@ type TrckTray struct {
 				flap <- _cd00
 				return
 			}
+			
+			// ~Step 3.6
+			if wrkd == false { time.Sleep (time.Millisecond * 1) }
 		}
 		} (objc, flap)
 		
@@ -262,12 +275,17 @@ type trckTray_trck struct {
 	mssgList *list.List
 	mssgListMtxx *sync.Mutex
 }
-func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) {
+func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
+	wrkd = false
+	
 	if objc.mssgList.Len () == 0 {
 		return
 	}
-	_ba00 := objc.mssgList.Front ().Value.(*Mssg)
+	_aa50 := objc.mssgList.Front ()
+	if _aa50 == nil    { return }
+	_ba00 := _aa50.Value.(*Mssg)
 	if _ba00 == nil    { return }
+	objc.mssgList.Remove (_aa50)
 	_bb00, _bc00 := _ba00.Core.([]string)
 	if _bc00 == false  { return }
 	_bd00 := _bb00
@@ -278,54 +296,69 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) {
 	if regexp.MustCompile (`^[a-z0-9]{4,4}$`  ).MatchString (_bd00 [1]) == false {
 		return
 	}
+	wrkd = true
 	
 	if        _bd00 [1] == "bb00" {
-	// Start-up failed
+	// Track: Start-up failed
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
 				_ca00.strtUpppSccsBool = "flss"
-				_ca00.strtUpppMssg = _bd00 [2]
+				if len (_bd00) > 2 {
+					_ca00.strtUpppMssg = _bd00 [2]
+				}
 				_ca00.strtUpppBool = true
-				break
+				return
 			}
 		}
 	} else if _bd00 [1] == "bc00" {
-	// Start-up successful
+	// Track: Start-up successful
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
 				_ca00.strtUpppSccsBool = "true"
 				_ca00.lifeBool = true
 				_ca00.strtUpppBool = true
-				break
+				return
 			}
 		}
 	} else if _bd00 [1] == "bm00" {
-	// Track failed
+	// Track: Failed
 		_ca00 := ""
+		_ca25 := ""
 		for _, _ca50 := range objc.trck {
-			if _ca50.trck.Iddd == _ba00.Sndr {
-				_ca00 = _ca50.trck.Iddd
+			if _ba00.Sndr == _ca50.trck.Iddd {
+				_ca00 =  _ca50.trck.Iddd
+				_ca25 =  _ca50.trck.Name
 				_ca50.lifeBool = false
 				break
 			}
 		}
+		if _ca00 == "" { return }
 		_cb00 := ""
 		if len (_bd00) > 2 { _cb00 = _bd00 [2] }
 		_cc00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"10aa",
 			_ca00 ,
+			_ca25 ,
 			_cb00 ,
 		}
 		_cd00 := Mssg_Estb (objc.mngrIddd, "", _cc00)
 		trckTray_frwrToooPrvlTrck (objc, _cd00)
 	} else if _bd00 [1] == "by00" {
-	// Shutdown
+	// Shutdown system
 		if objc.shutDownInnnPrgsBool == true { return }
 		objc.shutDownInnnPrgsBool     = true
 		go trckTray_hndlAaaaMssg_shutDownSyst (objc)
+	} else if _bd00 [1] == "bz00" {
+	// Track: Shutdown
+		for _, _ca00 := range objc.trck {
+			if _ca00.trck.Iddd == _ba00.Sndr {
+				_ca00.lifeBool = false
+				return
+			}
+		}
 	} else if _bd00 [1] == "cb00" {
-	// How many messages do I have?
+	// Track: How many messages do I have?
 		for _, _ca00 := range objc.trck {
 			if _ca00.trck.Iddd == _ba00.Sndr {
 				_cb00 := []string {
@@ -341,21 +374,24 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) {
 			}
 		}
 	}
+	
+	return
 }
 func trckTray_hndlAaaaMssg_shutDownSyst (objc *TrckTray) {
 	for _ba00 := len (objc.trck); _ba00 >= 1; _ba00 -- {
 		_bb00 := _ba00 - 1
+		_bb50 := objc.trck [_bb00]
 		_bc00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"18aa",
 		}
-		_bd00 := Mssg_Estb (objc.mngrIddd, objc.trck [_bb00].trck.Iddd, _bc00)
-		objc.trck [_bb00].mssgListMtxx.Lock ()
-		objc.trck [_bb00].mssgList.PushBack (_bd00)
-		objc.trck [_bb00].mssgListMtxx.Unlock ()
+		_bd00 := Mssg_Estb (objc.mngrIddd, _bb50.trck.Iddd, _bc00)
+		_bb50.mssgListMtxx.Lock ()
+		_bb50.mssgList.PushBack (_bd00)
+		_bb50.mssgListMtxx.Unlock ()
 		for {
-			time.Sleep (time.Microsecond * 1)
-			if objc.trck [_bb00].lifeBool == false { break }
+			time.Sleep (time.Millisecond * 1)
+			if _bb50.lifeBool == false { break }
 		}
 	}
 	objc.shutDownBool = true

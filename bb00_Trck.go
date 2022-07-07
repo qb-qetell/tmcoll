@@ -38,13 +38,13 @@ type Trck struct {
 		defer func (objc *Trck) {
 			_ba00 := recover ()
 			if _ba00 != nil {
-				_ca00 := fmt.Sprintf ("Track paniced. [%v]", _ba00)
+				_ca00 := fmt.Sprintf (`Paniced. [%v]`, _ba00)
 				_cb00 := []string {
 					combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 					"bm00",
 					_ca00,
 				}
-				Mssg_Estb (objc.Iddd, hostIddd, _cb00).Send (objc.Clap)
+				Mssg_Estb (objc.Iddd, hostIddd, _cb00).Send (objc.Flap)
 			}
 		} (objc)
 		objc.Code (hostIddd, objc.Iddd, objc.Name, objc.Clap, objc.Flap, objc.Seed)

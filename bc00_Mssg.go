@@ -21,17 +21,17 @@ type Mssg struct {
 				default: { return false }
 				}
 			} else {
-				flapXX := make (chan bool)
+				flap := make (chan bool)
 				go func (slppDrtn time.Duration, flap chan <- bool) {
 					time.Sleep (slppDrtn)
 					select {
 					case flap <- true: {}
 					default: {}
 					}
-				} (waitDrtn [0], flapXX)
+				} (waitDrtn [0], flap)
 				select {
 				case mssgBoxx <- objc: { return true  }
-				case _  =  <- flapXX:  { return false }
+				case _    =   <- flap: { return false }
 				}
 			}
 		} else {
