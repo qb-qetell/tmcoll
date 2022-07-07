@@ -25,7 +25,7 @@ func Test_Ba00 (t *testing.T) {
 	clap, flap := trckTray.Mngg ()
 	
 	go func () {
-		time.Sleep (time.Second * 1)
+		time.Sleep (time.Minute * 8)
 		_ba00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"**30",
@@ -52,11 +52,11 @@ func trck0001 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
-	for i200 := 1000001; i200 <= 1000005; i200 ++ {
-		Mssg_Estb (iddd + ".xx.nn", "02", []string {strconv.Itoa (i200)}).Send (flap)
+	for i200 := 1000001; i200 <= 1002500; i200 ++ {
+		Mssg_Estb (iddd + ".xx.nn", "02.nn", []string {strconv.Itoa (i200)}).Send (flap)
 	}
-	for i300 := 1000001; i300 <= 1000005; i300 ++ {
-		Mssg_Estb (iddd + ".xx.nn", "03", []string {strconv.Itoa (i300)}).Send (flap)
+	for i300 := 1000001; i300 <= 1002500; i300 ++ {
+		Mssg_Estb (iddd + ".xx.nn", "03.nn", []string {strconv.Itoa (i300)}).Send (flap)
 	}
 	go func () {
 		time.Sleep (time.Second * 8)
@@ -92,7 +92,7 @@ func trck0002 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
 	go func () {
-		time.Sleep (time.Second * 4)
+		time.Sleep (time.Second * 6)
 		_ba50 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"by00",
@@ -125,7 +125,7 @@ func trck0003 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
 	go func () {
-		time.Sleep (time.Second * 2)
+		time.Sleep (time.Second * 4)
 		_ba50 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"by00",
