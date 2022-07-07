@@ -301,7 +301,7 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 	if        _bd00 [1] == "bb00" {
 	// Track: Start-up failed
 		for _, _ca00 := range objc.trck {
-			if _ca00.trck.Iddd == _ba00.Sndr {
+			if _ba00.Sndr == _ca00.trck.Iddd {
 				_ca00.strtUpppSccsBool = "flss"
 				if len (_bd00) > 2 {
 					_ca00.strtUpppMssg = _bd00 [2]
@@ -313,7 +313,7 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 	} else if _bd00 [1] == "bc00" {
 	// Track: Start-up successful
 		for _, _ca00 := range objc.trck {
-			if _ca00.trck.Iddd == _ba00.Sndr {
+			if _ba00.Sndr == _ca00.trck.Iddd {
 				_ca00.strtUpppSccsBool = "true"
 				_ca00.lifeBool = true
 				_ca00.strtUpppBool = true
@@ -346,13 +346,18 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 		trckTray_frwrToooPrvlTrck (objc, _cd00)
 	} else if _bd00 [1] == "by00" {
 	// Shutdown system
+		for _, _ca00 := range objc.trck {
+			if _ba00.Sndr == _ca00.trck.Iddd && _ca00.prvlBool == false {
+				return
+			}
+		}
 		if objc.shutDownInnnPrgsBool == true { return }
 		objc.shutDownInnnPrgsBool     = true
 		go trckTray_hndlAaaaMssg_shutDownSyst (objc)
 	} else if _bd00 [1] == "bz00" {
 	// Track: Shutdown
 		for _, _ca00 := range objc.trck {
-			if _ca00.trck.Iddd == _ba00.Sndr {
+			if _ba00.Sndr == _ca00.trck.Iddd {
 				_ca00.lifeBool = false
 				return
 			}
@@ -360,7 +365,7 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 	} else if _bd00 [1] == "cb00" {
 	// Track: How many messages do I have?
 		for _, _ca00 := range objc.trck {
-			if _ca00.trck.Iddd == _ba00.Sndr {
+			if _ba00.Sndr == _ca00.trck.Iddd {
 				_cb00 := []string {
 					_bd00 [0],
 					"20aa",

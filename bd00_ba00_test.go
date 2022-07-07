@@ -5,22 +5,30 @@ import "github.com/qb-qetell/combGUID"
 import "strconv"
 import "time"
 
-// Testing startup and shutdown
 func Test_Ba00 (t *testing.T) {
-	pack0001 := Trck_Estb ("01", "Tr01", trck0001, map[string]interface {} {"01": "aa"})
-	pack0002 := Trck_Estb ("02", "Tr02", trck0002, map[string]interface {} {"02": "bb"})
-	pack0003 := Trck_Estb ("03", "Tr03", trck0003, map[string]interface {} {"03": "cc"})
-	trckMngr := TrckTray_Estb ("00")
-	trckMngr.Pplt (pack0001, []string {"02", "03"}, true )
-	trckMngr.Pplt (pack0002, []string {"01", "03"}, false)
-	trckMngr.Pplt (pack0003, []string {"01", "02"}, false)
-	clap, flap := trckMngr.Mngg ()
+	trckTray := TrckTray_Estb ("00")
+	trckTray.Pplt (
+		Trck_Estb ("01", "Tr01", trck0001, map[string]interface {} {"01": "aa"}),
+		[]string  {"02", "03"},
+		false,
+	)
+	trckTray.Pplt (
+		Trck_Estb ("02", "Tr02", trck0002, map[string]interface {} {"02": "bb"}),
+		[]string  {"01", "03"},
+		false,
+	)
+	trckTray.Pplt (
+		Trck_Estb ("03", "Tr03", trck0003, map[string]interface {} {"03": "cc"}),
+		[]string  {"01", "02"},
+		true,
+	)
+	clap, flap := trckTray.Mngg ()
 	
 	go func () {
-		time.Sleep (time.Minute * 16)
+		time.Sleep (time.Minute * 4)
 		_ba00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-			"**30",
+			"**60",
 		}
 		Mssg_Estb ("", "", _ba00).Send (clap)
 	} ()
@@ -44,14 +52,14 @@ func trck0001 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
-	for i200 := 1000001; i200 <= 9999999; i200 ++ {
+	for i200 := 1000001; i200 <= 1000005; i200 ++ {
 		Mssg_Estb (iddd + ".xx.nn", "02", []string {strconv.Itoa (i200)}).Send (flap)
 	}
-	for i300 := 1000001; i300 <= 9999999; i300 ++ {
+	for i300 := 1000001; i300 <= 1000005; i300 ++ {
 		Mssg_Estb (iddd + ".xx.nn", "03", []string {strconv.Itoa (i300)}).Send (flap)
 	}
 	go func () {
-		time.Sleep (time.Minute * 12)
+		time.Sleep (time.Second * 8)
 		_ba00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"by00",
@@ -83,6 +91,14 @@ func trck0002 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
+	go func () {
+		time.Sleep (time.Second * 4)
+		_ba50 := []string {
+			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+			"by00",
+		}
+		Mssg_Estb (iddd, hostIddd, _ba50).Send (flap)
+	} ()
 	for {
 		_bb00 := <- clap
 		_bc00 := _bb00.Core.([]string)
@@ -108,6 +124,14 @@ func trck0003 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
+	go func () {
+		time.Sleep (time.Second * 2)
+		_ba50 := []string {
+			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+			"by00",
+		}
+		Mssg_Estb (iddd, hostIddd, _ba50).Send (flap)
+	} ()
 	for {
 		_bb00 := <- clap
 		_bc00 := _bb00.Core.([]string)
