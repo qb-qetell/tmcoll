@@ -25,10 +25,10 @@ func Test_Ba00 (t *testing.T) {
 	clap, flap := trckTray.Mngg ()
 	
 	go func () {
-		time.Sleep (time.Minute * 4)
+		time.Sleep (time.Second * 1)
 		_ba00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-			"**60",
+			"**30",
 		}
 		Mssg_Estb ("", "", _ba00).Send (clap)
 	} ()
