@@ -199,7 +199,6 @@ type TrckTray struct {
 							select {
 							case _bc00.trck.Clap <-
 								_ca00.Value.(*Mssg): {
-								wrkd = true
 								goto nxt2
 							}
 							default: {
@@ -210,6 +209,7 @@ type TrckTray struct {
 								goto nxt2
 							}
 							}
+							wrkd = true
 						}
 					}
 				}
