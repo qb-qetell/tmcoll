@@ -87,8 +87,9 @@ type TrckTray struct {
 			}
 		}
 		for _,  _bb00 := range objc.trck {
+			if _bb00.prvl == nil   { continue }
 			for _,  _ca00 := range _bb00.prvl {
-				if _ca00 != "by00" {
+				if _ca00 != "cb00" && _ca00 != "cc00" {
 					_da00 := []string {
 						combGUID.CombGUID_Estb ("",   16).SmplFrmt (),
 						"00fa",
