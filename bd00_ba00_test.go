@@ -8,19 +8,19 @@ import "time"
 func Test_Ba00 (t *testing.T) {
 	trckTray := TrckTray_Estb ("00")
 	trckTray.Pplt (
-		Trck_Estb ("01", "Tr01", trck0001, map[string]interface {} {"01": "aa"}),
-		[]string  {"02", "03"},
-		false,
+		Trck_Estb ("01",     "Tr01", trck0001, map[string]interface {} {"01": "aa"}),
+		[]string  {"02",     "03"},
+		[]string  {"cb00", "cc00"},
 	)
 	trckTray.Pplt (
-		Trck_Estb ("02", "Tr02", trck0002, map[string]interface {} {"02": "bb"}),
-		[]string  {"01", "03"},
-		false,
+		Trck_Estb ("02",     "Tr02", trck0002, map[string]interface {} {"02": "bb"}),
+		[]string  {"01",     "03"},
+		[]string  {"cb00", "cc00"},
 	)
 	trckTray.Pplt (
-		Trck_Estb ("03", "Tr03", trck0003, map[string]interface {} {"03": "cc"}),
-		[]string  {"01", "02"},
-		true,
+		Trck_Estb ("03",    "Tr03", trck0003, map[string]interface {} {"03": "cc"}),
+		[]string  {"01",     "02"},
+		[]string  {"cb00", "cc00"},
 	)
 	clap, flap := trckTray.Mngg ()
 	
@@ -52,17 +52,21 @@ func trck0001 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
-	for i200 := 1000001; i200 <= 1002500; i200 ++ {
-		Mssg_Estb (iddd + ".xx.nn", "02.nn", []string {strconv.Itoa (i200)}).Send (flap)
-	}
-	for i300 := 1000001; i300 <= 1002500; i300 ++ {
-		Mssg_Estb (iddd + ".xx.nn", "03.nn", []string {strconv.Itoa (i300)}).Send (flap)
-	}
 	go func () {
-		time.Sleep (time.Second * 8)
+		for i200 := 1000001; i200 <= 1111111; i200 ++ {
+			Mssg_Estb (iddd + ".xx.nn", "02.nn", []string {strconv.Itoa (
+				i200)}).Send (flap)
+		}
+		for i300 := 1000001; i300 <= 1111111; i300 ++ {
+			Mssg_Estb (iddd + ".xx.nn", "03.nn", []string {strconv.Itoa (
+				i300)}).Send (flap)
+		}
+	} ()
+	go func () {
+		time.Sleep (time.Second * 40000000)
 		_ba00 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-			"by00",
+			"cc00",
 		}
 		Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
 	} ()
@@ -91,11 +95,19 @@ func trck0002 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
+	time.Sleep (time.Second * 4)
+	_ba20 := combGUID.CombGUID_Estb ("", 16).SmplFrmt ()
+	_ba25 := []string {
+		_ba20,
+		"bt00",
+	}
+	Mssg_Estb (iddd, hostIddd, _ba25).Send (flap)
+	fmt.Println ("tr02:", _ba20)
 	go func () {
-		time.Sleep (time.Second * 6)
+		time.Sleep (time.Second * 8)
 		_ba50 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-			"by00",
+			"cc00",
 		}
 		Mssg_Estb (iddd, hostIddd, _ba50).Send (flap)
 	} ()
@@ -124,11 +136,19 @@ func trck0003 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 		"bc00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
+	time.Sleep (time.Second * 4)
+	_ba20 := combGUID.CombGUID_Estb ("", 16).SmplFrmt ()
+	_ba25 := []string {
+		_ba20,
+		"bt00",
+	}
+	Mssg_Estb (iddd, hostIddd, _ba25).Send (flap)
+	fmt.Println ("tr02:", _ba20)
 	go func () {
-		time.Sleep (time.Second * 4)
+		time.Sleep (time.Second * 40000000)
 		_ba50 := []string {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-			"by00",
+			"cd00",
 		}
 		Mssg_Estb (iddd, hostIddd, _ba50).Send (flap)
 	} ()

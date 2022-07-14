@@ -1,4 +1,5 @@
 package tmcoll
+import "github.com/qb-qetell/errr"
 import "time"
 
 type Mssg struct {
@@ -13,12 +14,15 @@ type Mssg struct {
 		mssg.Core = core
 		return mssg
 	}
-	func (objc *Mssg) Send (mssgBoxx chan <- *Mssg, waitDrtn ... time.Duration) (bool) {
+	func (objc *Mssg) Send (mssgBoxx chan <- *Mssg, waitDrtn ... time.Duration) (error) {
 		if len (waitDrtn) != 0 {
 			if waitDrtn [0] == (time.Nanosecond * 0) {
 				select {
-				case mssgBoxx <- objc: { return true }
-				default: { return false }
+				case mssgBoxx <- objc: { return nil }
+				default: {
+					return errr.Errr_Estb ("ba00",
+						"Message did not go through.")
+				}
 				}
 			} else {
 				flap := make (chan bool)
@@ -30,12 +34,16 @@ type Mssg struct {
 					}
 				} (waitDrtn [0], flap)
 				select {
-				case mssgBoxx <- objc: { return true  }
-				case _    =   <- flap: { return false }
+				case mssgBoxx <- objc: { return nil  }
+				case _    =   <- flap: {
+					return errr.Errr_Estb ("ba00",
+						"Message did not go through.")
+
+				}
 				}
 			}
 		} else {
 			mssgBoxx <- objc
-			return true
+			return nil
 		}
 	}
