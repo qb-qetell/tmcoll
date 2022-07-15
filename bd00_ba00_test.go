@@ -133,9 +133,10 @@ func trck0003 (hostIddd, iddd, name string, clap <- chan *Mssg, flap chan <- *Ms
 	fmt.Println ("seed:", seed)
 	_ba00 := []string {
 		combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
-		"bc00",
+		"bb00",
 	}
 	Mssg_Estb (iddd, hostIddd, _ba00).Send (flap)
+	return
 	time.Sleep (time.Second * 4)
 	_ba20 := combGUID.CombGUID_Estb ("", 16).SmplFrmt ()
 	_ba25 := []string {
