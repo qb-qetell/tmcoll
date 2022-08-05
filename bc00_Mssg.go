@@ -20,8 +20,11 @@ type Mssg struct {
 				select {
 				case mssgBoxx <- objc: { return nil }
 				default: {
-					return errr.Errr_Estb ("ba00",
-						"Message did not go through.")
+					return errr.Errr_Estb (
+						"ba00",
+						"Could not send message. [Channel did not " +
+						"allow message in.]",
+					)
 				}
 				}
 			} else {
@@ -36,9 +39,11 @@ type Mssg struct {
 				select {
 				case mssgBoxx <- objc: { return nil  }
 				case _    =   <- flap: {
-					return errr.Errr_Estb ("ba00",
-						"Message did not go through.")
-
+					return errr.Errr_Estb (
+						"ba00",
+						"Could not send message. [Channel did not " +
+						"allow message in.]",
+					)
 				}
 				}
 			}
