@@ -11,8 +11,10 @@ import "time"
 type TrckTray struct {
 	mngrIddd             string
 	trck                 []*trckTray_trck
-	mssgList             *list.List
-	mssgListMtxx         *sync.Mutex
+	hostMssgList         *list.List
+	hostMssgListMtxx     *sync.Mutex
+	systMssgList         *list.List
+	systMssgListMtxx     *sync.Mutex
 	shutDownInnnPrgsBool bool
 	shutDownBool         bool
 }
@@ -20,14 +22,16 @@ type TrckTray struct {
 		return &TrckTray {
 			mngrIddd:             mngrIddd,
 			trck:                 []*trckTray_trck {},
-			mssgList:             list.New (),
-			mssgListMtxx:         &sync.Mutex {},
+			hostMssgList:             list.New (),
+			hostMssgListMtxx:         &sync.Mutex {},
+			systMssgList:             list.New (),
+			systMssgListMtxx:         &sync.Mutex {},
 			shutDownInnnPrgsBool: false,
 			shutDownBool:         false,
 		}
 	}
 	func (objc *TrckTray) Pplt (trck *Trck, whttList []string, prvl []string) {
-		trckInst :=                &trckTray_trck {}
+		trckInst := &trckTray_trck {}
 		trckInst.trck =             trck
 		trckInst.whttList =         whttList
 		trckInst.prvl =             prvl
@@ -52,8 +56,14 @@ type TrckTray struct {
 					"00fa",
 					"No track to manage.",
 				}
-				_cb00 := Mssg_Estb (objc.mngrIddd, "", _ca00)
+				_cb00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _ca00)
 				flap <- _cb00
+				_cc00 := []string {
+					combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+					"00ta",
+				}
+				_cd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _cc00)
+				flap <- _cd00
 				return
 			}
 			dscvTrck := make (map[string]string)
@@ -65,8 +75,14 @@ type TrckTray struct {
 						"00fa",
 						"A track's ID is invalid.",
 					}
-					_cb00 := Mssg_Estb (objc.mngrIddd, "", _ca00)
+					_cb00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _ca00)
 					flap <- _cb00
+					_cc00 := []string {
+						combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+						"00ta",
+					}
+					_cd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _cc00)
+					flap <- _cd00
 					return
 				}
 				dscvTrck [_ba00.trck.Iddd] = "dscv"
@@ -78,11 +94,17 @@ type TrckTray struct {
 							combGUID.CombGUID_Estb ("", 16,
 								).SmplFrmt (),
 							"00fa",
-							"A track specified a non-existent " +
-								"track on its whitelist.",
+							"A track's whitelist contains a " +
+								"non-existent track's id.",
 						}
-						_db00 := Mssg_Estb (objc.mngrIddd, "", _da00)
+						_db00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _da00)
 						flap <- _db00
+						_dc00 := []string {
+							combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+							"00ta",
+						}
+						_dd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _dc00)
+						flap <- _dd00
 						return
 					}
 				}
@@ -98,17 +120,21 @@ type TrckTray struct {
 							"A track specified has an invalid " +
 								"privilege.",
 						}
-						_db00 := Mssg_Estb (objc.mngrIddd, "", _da00)
+						_db00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _da00)
 						flap <- _db00
+						_dc00 := []string {
+							combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
+							"00ta",
+						}
+						_dd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _dc00)
+						flap <- _dd00
 						return
 					}
 				}
 			}
-		
 			// ~Step 2
 			go func (objc *TrckTray) {
 				strtUpppSccsBool := true
-
 				// ~Step 2.1: Start all tracks
 				for _, _ba00 := range objc.trck {
 					go _ba00.trck.Runn (objc.mngrIddd)
@@ -131,7 +157,7 @@ type TrckTray struct {
 								"00fa",
 								_cb00 ,
 							}
-							_cd00 := Mssg_Estb (objc.mngrIddd, "",
+							_cd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd,
 								_cc00)
 							flap <- _cd00
 							goto next
@@ -146,14 +172,13 @@ type TrckTray struct {
 								"00ga",
 								_cb00 ,
 							}
-							_cd00 := Mssg_Estb (objc.mngrIddd, "",
+							_cd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd,
 								_cc00)
 							flap <- _cd00
 						}
 						break
 					}
 				}
-			
 				// ~Step 2.2: If a track could not startup, send shutdown message
 				next:
 				if strtUpppSccsBool == false {
@@ -161,26 +186,45 @@ type TrckTray struct {
 						combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 						"cb00",
 					}
-					_cf00 := Mssg_Estb (objc.mngrIddd, objc.mngrIddd, _ce00)
-					objc.mssgListMtxx.Lock ()
-					objc.mssgList.PushBack (_cf00)
-					objc.mssgListMtxx.Unlock ()
+					_cf00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd + "!", _ce00)
+					objc.systMssgListMtxx.Lock ()
+					objc.systMssgList.PushBack (_cf00)
+					objc.systMssgListMtxx.Unlock ()
 				} else {
-					_ca00 := []string {
+					_ck00 := []string {
 						combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 						"00ma",
 					}
-					_cb00 := Mssg_Estb (objc.mngrIddd, "", _ca00)
-					flap <- _cb00
+					_cl00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _ck00)
+					flap <- _cl00
 				}
 			} (objc)
-		
 			// ~Step 3
+			mssgTrck := []*trckTray_trck {}
+			hostTrck :=   &trckTray_trck {
+				trck:             Trck_Estb (objc.mngrIddd,       "", nil),
+				mssgList:         hostMssgList,
+				mssgListMtxx:     hostMssgListMtxx,
+			}
+			whttList := []string {}
+			for _, _ak00:= range objc.trck {
+				whttList = append (whttList, _ak00.trck.Iddd)
+			}
+			hostTrck.whttList = whttList
+			mssgTrck = append (mssgTrck, hostTrck)
+			systTrck :=   &trckTray_trck {
+				trck:             Trck_Estb (objc.mngrIddd + "!", "", nil),
+				whttList:         whttList,
+				mssgList:         systMssgList,
+				mssgListMtxx:     systMssgListMtxx,
+			}
+			mssgTrck = append (mssgTrck, systTrck)
+			mssgTrck = append (mssgTrck, objc.trck...)
 			for {
 				wrkd := false
-			
 				// ~Step 3.1: Receiving messages
-				for _, _ba00 := range objc.trck {
+				for _, _ba00 := range mssgTrck {
+					wrkd = true
 					select {
 					case _bb00 := <- _ba00.trck.Flap: {
 						if strings.Index (_bb00.Sndr,
@@ -196,32 +240,29 @@ type TrckTray struct {
 								break
 							}
 						}
-						if _bb00.Rcpn == objc.mngrIddd {
-							objc.mssgListMtxx.Lock ()
-							objc.mssgList.PushBack (_bb00)
-							objc.mssgListMtxx.Unlock ()
-						}
-						wrkd = true
 					}
 					default: {}
 					}
 					nxt1:
 				}
 				// ~Step 3.2: Pushing messages
-				for _, _bc00 := range objc.trck {
+				for _, _bc00 := range mssgTrck {
 					for {
 						_bc00.mssgListMtxx.Lock ()
 						_ca00 := _bc00.mssgList.Front ()
 						_bc00.mssgListMtxx.Unlock ()
 						if _ca00 == nil { goto nxt2 }
+						wrkd = true
 						_bc00.mssgListMtxx.Lock ()
 						_bc00.mssgList.Remove (_ca00)
 						_bc00.mssgListMtxx.Unlock ()
-						for _, _cb00 := range _bc00.whttList {
-							if strings.Index (_ca00.Value.(*Mssg).Sndr,
-								_cb00) == 0 ||
+						for _ca60, _cb00 := range _bc00.whttList {
+							if ((_ca60 + 1) != 2) && (strings.Index (
+								_ca00.Value.(*Mssg).Sndr, _cb00) ==
+								0 || _ca00.Value.(*Mssg).Sndr ==
+								objc.mngrIddd ||
 								_ca00.Value.(*Mssg).Sndr ==
-								objc.mngrIddd {
+								objc.mngrIddd + "!") {
 								select {
 								case _bc00.trck.Clap <-
 									_ca00.Value.(*Mssg): {
@@ -232,69 +273,31 @@ type TrckTray struct {
 									)
 									_bc00.mssgList.PushFront(
 										_ca00.Value.(
-											*Mssg),
+										*Mssg),
 									)
 									_bc00.mssgListMtxx.Unlock()
 									goto nxt2
 								}
 								}
-								wrkd = true
 							}
 						}
 					}
 					nxt2:
 				}
-				
 				// ~Step 3.3
-				select {
-				case _ca00 := <- clap: {
-					_ca00 := _ca00.Core.([]string)
-					if _ca00 != nil && len (_ca00) >= 2 {
-						if        _ca00 [1] == "**30" {
-							_ce00 := []string {
-								combGUID.CombGUID_Estb ("",
-									16).SmplFrmt (),
-								"cb00",
-							}
-							_cf00 := Mssg_Estb ("", objc.mngrIddd,
-								_ce00)
-							objc.mssgListMtxx.Lock ()
-							objc.mssgList.PushBack (_cf00)
-							objc.mssgListMtxx.Unlock ()
-						} else if _ca00 [1] == "**60" {
-							_ce00 := []string {
-								combGUID.CombGUID_Estb ("",
-									16).SmplFrmt (),
-								"cc00",
-							}
-							_cf00 := Mssg_Estb ("", objc.mngrIddd,
-								_ce00)
-							objc.mssgListMtxx.Lock ()
-							objc.mssgList.PushBack (_cf00)
-							objc.mssgListMtxx.Unlock ()
-						}
-					}
-					wrkd = true
-				}
-				default: {}
-				}
-			
-				// ~Step 3.4
 				_cb00 := trckTray_hndlAaaaMssg (objc, flap)
 				if _cb00 == true { wrkd = true }
-			
-				// ~Step 3.5
+				// ~Step 3.4
 				if objc.shutDownBool == true {
 					_cc00 := []string {
 						combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 						"00ta",
 					}
-					_cd00 := Mssg_Estb (objc.mngrIddd, "", _cc00)
+					_cd00 := Mssg_Estb (objc.mngrIddd + "!", objc.mngrIddd, _cc00)
 					flap <- _cd00
 					return
 				}
-			
-				// ~Step 3.6
+				// ~Step 3.5
 				if wrkd == false { time.Sleep (time.Millisecond * 1) }
 			}
 		} (objc, clap, flap)
@@ -316,24 +319,18 @@ type trckTray_trck struct {
 func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 	wrkd = false
 	
-	if objc.mssgList.Len () == 0 {
-		return
-	}
-	_aa50 := objc.mssgList.Front ()
-	if _aa50 == nil    { return }
+	if objc.systMssgList.Len () == 0 { return }
+	_aa50 := objc.systMssgList.Front ()
+	if _aa50 ==    nil { return }
 	_ba00 := _aa50.Value.(*Mssg)
-	if _ba00 == nil    { return }
-	objc.mssgList.Remove (_aa50)
+	if _ba00 ==    nil { return }
+	objc.systMssgList.Remove (_aa50)
 	_bb00, _bc00 := _ba00.Core.([]string)
-	if _bc00 == false  { return }
+	if _bc00 ==  false { return }
 	_bd00 := _bb00
 	if len (_bd00) < 2 { return }
-	if regexp.MustCompile (`^[a-z0-9]{16,16}$`).MatchString (_bd00 [0]) == false {
-		return
-	}
-	if regexp.MustCompile (`^[a-z0-9]{4,4}$`  ).MatchString (_bd00 [1]) == false {
-		return
-	}
+	if regexp.MustCompile (`^[a-z0-9]{16,16}$`).MatchString (_bd00 [0]) == false { return }
+	if regexp.MustCompile (`^[a-z0-9]{4,4}$`  ).MatchString (_bd00 [1]) == false { return }
 	wrkd = true
 	
 	if        _bd00 [1] == "bb00" {
@@ -380,7 +377,7 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 			_ca25 ,
 			_cb00 ,
 		}
-		_cd00 := Mssg_Estb (objc.mngrIddd, "", _cc00)
+		_cd00 := Mssg_Estb (objc.mngrIddd + "!", "", _cc00)
 		trckTray_frwrToooPrvlTrck (objc, _cd00)
 	} else if _bd00 [1] == "bt00" {
 	// Track: How many messages do I have?
@@ -391,7 +388,7 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 					"20aa",
 					strconv.Itoa (_ca00.mssgList.Len ()),
 				}
-				_cc00 := Mssg_Estb (objc.mngrIddd, _ca00.trck.Iddd, _cb00)
+				_cc00 := Mssg_Estb (objc.mngrIddd + "!", _ca00.trck.Iddd, _cb00)
 				_ca00.mssgListMtxx.Lock ()
 				_ca00.mssgList.PushBack (_cc00)
 				_ca00.mssgListMtxx.Unlock ()
@@ -408,7 +405,8 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 		}
 	} else if _bd00 [1] == "cb00" {
 	// Track Management: shutdown gracefully
-		if _ba00.Sndr == objc.mngrIddd  { goto nextCB00 }
+		if _ba00.Sndr == objc.mngrIddd ||
+			_ba00.Sndr == objc.mngrIddd + "!"  { goto nextCB00 }
 		for _, _ca00 := range objc.trck {
 			if _ba00.Sndr == _ca00.trck.Iddd {
 				for _, _da00 := range _ca00.prvl {
@@ -424,7 +422,8 @@ func trckTray_hndlAaaaMssg (objc *TrckTray, flap chan <- *Mssg) (wrkd bool) {
 		go trckTray_hndlAaaaMssg_shutDownSyst (objc)
 	} else if _bd00 [1] == "cc00" {
 	// Track Management: shutdown imediately
-		if _ba00.Sndr == objc.mngrIddd  { goto nextCC00 }
+		if _ba00.Sndr == objc.mngrIddd ||
+			_ba00.Sndr == objc.mngrIddd +  "!" { goto nextCC00 }
 		for _, _ca00 := range objc.trck {
 			if _ba00.Sndr == _ca00.trck.Iddd {
 				for _, _da00 := range _ca00.prvl {
@@ -448,7 +447,7 @@ func trckTray_hndlAaaaMssg_shutDownSyst (objc *TrckTray) {
 			combGUID.CombGUID_Estb ("", 16).SmplFrmt (),
 			"18aa",
 		}
-		_bd00 := Mssg_Estb (objc.mngrIddd, _bb50.trck.Iddd, _bc00)
+		_bd00 := Mssg_Estb (objc.mngrIddd + "!", _bb50.trck.Iddd, _bc00)
 		_bb50.mssgListMtxx.Lock ()
 		_bb50.mssgList.PushBack (_bd00)
 		_bb50.mssgListMtxx.Unlock ()
@@ -460,12 +459,7 @@ func trckTray_hndlAaaaMssg_shutDownSyst (objc *TrckTray) {
 	objc.shutDownBool = true
 }
 func trckTray_frwrToooPrvlTrck (objc *TrckTray, mssg *Mssg) {
-	for _, _ca00 := range objc.trck {
-		if len (_ca00.prvl) > 0 {
-			mssg.Rcpn = _ca00.trck.Iddd
-			_ca00.mssgListMtxx.Lock ()
-			_ca00.mssgList.PushBack (mssg)
-			_ca00.mssgListMtxx.Unlock ()
-		}
-	}
+	objc.hostMssgListMtxx.Lock ()
+	objc.hostMssgList.PushBack (mssg)
+	objc.hostMssgListMtxx.Unlock ()
 }
